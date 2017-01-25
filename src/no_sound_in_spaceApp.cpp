@@ -14,25 +14,24 @@ class no_sound_in_spaceApp : public App {
 	void update() override;
 	void draw() override;
     
-    CameraPersp mCam;
-    // gl::BatchRef mSphere;
-    gl::BatchRef mShape;
-    
-    float theta;
+    CameraPersp     mCam;
+    gl::BatchRef    sun;
+    gl::TextureRef  sunTex;
+    gl::GlslProgRef mGlsl;
+    mat4            rotation;
 };
 
 void no_sound_in_spaceApp::setup()
 {
-    auto lambert = gl::ShaderDef().lambert().color();
-    gl::GlslProgRef shader = gl::getStockShader( lambert );
-    // mCam.lookAt( vec3( 3, 3, 3 ), vec3( 0 ) );
+    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
+                                 loadAsset( "shader.frag" ) );
     
-    // auto sphere = geom::Sphere().subdivisions( 30 );
-    // mSphere = gl::Batch::create( sphere, shader );
-    auto icosahedron = geom::Icosahedron();
-    mShape = gl::Batch::create( icosahedron, shader );
+    sunTex = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ), 
+                                  gl::Texture::Format().mipmap() );
+    sunTex->bind();
     
-    theta = 0;
+    auto sphere = geom::Sphere();
+    sun = gl::Batch::create( sphere, mGlsl );
     
 }
 
@@ -42,7 +41,7 @@ void no_sound_in_spaceApp::mouseDown( MouseEvent event )
 
 void no_sound_in_spaceApp::update()
 {
-    theta += 0.01;
+    rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
 }
 
 void no_sound_in_spaceApp::draw()
@@ -55,16 +54,16 @@ void no_sound_in_spaceApp::draw()
     // float angle = easeInOutQuint( theta ) * M_PI / 2.0f;
     
 	gl::clear( Color( 0, 0, 0 ) ); 
+    
+    gl::ScopedModelMatrix modelScope;
     gl::enableDepthRead();
     gl::enableDepthWrite();
     
     gl::setMatrices( mCam );
     
-    gl::color( 0.2, 0.7, 0.2 );
+    gl::multModelMatrix( rotation );
     
-    gl::rotate( angleAxis( theta, vec3( 0, 1, 0 ) ) );
-    // mSphere->draw();
-    mShape->draw();
+    sun->draw();
 }
 
 CINDER_APP( no_sound_in_spaceApp, RendererGl )
