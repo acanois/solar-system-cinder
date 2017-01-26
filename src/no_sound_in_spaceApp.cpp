@@ -11,6 +11,7 @@ using namespace std;
 
 class no_sound_in_spaceApp : public App {
   public:
+    static void prepareSettings( Settings *settings );
 	void setup() override;
 	void mouseDown( MouseEvent event ) override;
 	void update() override;
@@ -36,14 +37,19 @@ class no_sound_in_spaceApp : public App {
     
     // Shapes and textures - CLEAN UP
     gl::TextureCubeMapRef mCubeMap;
-    gl::BatchRef    planetBatch, skyBoxBatch;
-    gl::TextureRef  sunTex;
-    gl::GlslProgRef mGlsl;
-    mat4            rotation;
+    gl::BatchRef          planetBatch, skyBoxBatch;
+    gl::TextureRef        sunTex;
+    gl::GlslProgRef       mGlsl;
+    mat4                  rotation;
 };
 
 // Const for sky box, this probably needs to go somewhere else
-const int SKY_BOX_SIZE = 500;
+const size_t SKY_BOX_SIZE = 500;
+
+void no_sound_in_spaceApp::prepareSettings( Settings *settings ) 
+{
+    settings->setResizable( false );
+}
 
 void no_sound_in_spaceApp::setup()
 {
@@ -52,6 +58,8 @@ void no_sound_in_spaceApp::setup()
     gl::enableDepthRead();
     gl::enableDepthWrite();
     gl::enableAlphaBlending();
+    
+    setDefaultCameraValues();
     
     // Reflective Texture
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
@@ -83,7 +91,33 @@ void no_sound_in_spaceApp::setup()
                                   gl::Texture::Format().mipmap() );
     sunTex->bind();
     
+    // UI Window
+    mParams = params::InterfaceGl::create( getWindow(), "CameraPersp", 
+                                          toPixels( ivec2( 200, 300 ) ) );
     
+    mParams->addSeparator();
+    mParams->addSeparator();
+    mParams->addParam( "Eye Point X", &mEyePoint.x ).step( 0.01f );
+    mParams->addParam( "Eye Point Y", &mEyePoint.y ).step( 0.01f );
+    mParams->addParam( "Eye Point Z", &mEyePoint.z ).step( 0.01f );
+    mParams->addSeparator();
+    mParams->addParam( "Look At X", &mLookAt.x ).step( 0.01f );
+    mParams->addParam( "Look At Y", &mLookAt.y ).step( 0.01f );
+    mParams->addParam( "Look At Z", &mLookAt.z ).step( 0.01f );
+    mParams->addSeparator();
+    mParams->addParam( "FOV", &mFov ).min( 1.0f ).max( 179.0f );
+    mParams->addParam( "Near Plane", &mNearPlane ).step( 0.02f ).min( 0.1f );
+    mParams->addParam( "Far Plane", &mFarPlane ).step( 0.02f ).min( 0.1f );
+    mParams->addParam( "Lens Shift X", &mLensShift.x ).step( 0.01f );
+    mParams->addParam( "Lens Shift Y", &mLensShift.y ).step( 0.01f );
+    mParams->addSeparator();
+    mParams->addButton( "Reset Defaults", 
+                       bind ( &no_sound_in_spaceApp::setDefaultCameraValues, this ) );
+    
+    mCam.setEyePoint( vec3( 0.0f, 0.0f, 10.0f) );
+    mCam.lookAt( vec3( 0 ) );
+    mCamInit = mCam;
+    mCamUi   = CameraUi( &mCam );
 }
 
 void no_sound_in_spaceApp::resize()
@@ -93,19 +127,29 @@ void no_sound_in_spaceApp::resize()
 
 void no_sound_in_spaceApp::mouseDown( MouseEvent event )
 {
+    mCamUi.mouseDown( event );
 }
 
 void no_sound_in_spaceApp::update()
 {
-    // .lookAt( vec3(&eyepoint), vec3( target ) )
-    mCam.lookAt( vec3( 3, 0, 10 ), vec3( 0 ) );
-    
-//    mCam.lookAt( vec3( 8 * sin( theta / 1 + 10 ), 7 * 
-//                      cos( theta / 2 ), 8 * 
-//                      cos( theta / 4 + 11 ) ), vec3( 0 ) );
-    
+    mCam.setEyePoint( mEyePoint );
+    mCam.lookAt( mLookAt );
+    mCam.setLensShift( mLensShift );
+    // mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
     
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
+}
+
+void no_sound_in_spaceApp::setDefaultCameraValues()
+{
+    mEyePoint			= vec3( 0.0f, 0.0f, 10.0f );
+    mLookAt				= vec3( 0.0f );
+    mFov				= 25.0f;
+    mAspectRatio		= getWindowAspectRatio();
+    mNearPlane			= 3.5f;
+    mFarPlane			= 15.0f;
+    mLensShift			= vec2 ( 0 );
+    mCam			    = mCamInit;
 }
 
 void no_sound_in_spaceApp::draw()
@@ -131,9 +175,12 @@ void no_sound_in_spaceApp::draw()
         gl::scale( SKY_BOX_SIZE, SKY_BOX_SIZE, SKY_BOX_SIZE );
         skyBoxBatch->draw();
     gl::popMatrices();
+    
+    // draw camera parameter window
+    mParams->draw();
 }
 
-CINDER_APP( no_sound_in_spaceApp, RendererGl )
+CINDER_APP( no_sound_in_spaceApp, RendererGl( RendererGl::Options().msaa( 16 ) ) )
 
 
 
