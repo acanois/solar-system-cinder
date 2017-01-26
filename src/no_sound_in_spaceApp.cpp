@@ -14,6 +14,7 @@ class no_sound_in_spaceApp : public App {
 	void mouseDown( MouseEvent event ) override;
 	void update() override;
 	void draw() override;
+    void resize() override;
     
     gl::TextureCubeMapRef mCubeMap;
     gl::BatchRef    planetBatch, skyBoxBatch;
@@ -21,38 +22,54 @@ class no_sound_in_spaceApp : public App {
     gl::GlslProgRef mGlsl;
     mat4            rotation;
     CameraPersp     mCam;
+    
+    float theta;
 };
 
 const int SKY_BOX_SIZE = 500;
 
 void no_sound_in_spaceApp::setup()
 {
-    // For planet
+    // Reflective Texture
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
                                  loadAsset( "shader.frag" ) );
+     
     
     // For sky box
-    mCubeMap = gl::TextureCubeMap::create( loadImage( loadAsset( "space_orangey.jpg" ) ),
+    mCubeMap = gl::TextureCubeMap::create( loadImage( loadAsset( "space_2.png" ) ),
                                           gl::TextureCubeMap::Format().mipmap() );
     
-    auto envMapGlsl = gl::GlslProg::create( loadAsset( "env_map.vert" ), 
-                                           loadAsset("env_map.frag" ) );
-    auto skyBoxGlsl = gl::GlslProg::create( loadAsset( "sky_box.vert" ), 
-                                           loadAsset( "sky_box.frag" ) );
+#if defined( CINDER_GL_ES )
+    auto envMapGlsl = gl::GlslProg::create( loadAsset( "env_map_es2.vert" ), loadAsset( "env_map_es2.frag" ) );
+    auto skyBoxGlsl = gl::GlslProg::create( loadAsset( "sky_box_es2.vert" ), loadAsset( "sky_box_es2.frag" ) );
+#else
+    auto envMapGlsl = gl::GlslProg::create( loadAsset( "env_map.vert" ), loadAsset( "env_map.frag" ) );
+    auto skyBoxGlsl = gl::GlslProg::create( loadAsset( "sky_box.vert" ), loadAsset( "sky_box.frag" ) );
+#endif
     
-    planetBatch = gl::Batch::create( geom::Sphere(), envMapGlsl );
-    planetBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
+//    planetBatch = gl::Batch::create( geom::Sphere(), envMapGlsl );
+//    planetBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
     
     skyBoxBatch = gl::Batch::create( geom::Cube(), skyBoxGlsl );
     skyBoxBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
     
-//    sunTex = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ), 
-//                                  gl::Texture::Format().mipmap() );
-//    sunTex->bind();
+    auto sphere = geom::Sphere().subdivisions( 30 );
+    planetBatch = gl::Batch::create( sphere, mGlsl );
+    
+    sunTex = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ), 
+                                  gl::Texture::Format().mipmap() );
+    sunTex->bind();
+    
+    theta = 0;
     
     gl::enableDepthRead();
     gl::enableDepthWrite();
     
+}
+
+void no_sound_in_spaceApp::resize()
+{
+    mCam.setPerspective( 60, getWindowAspectRatio(), 1, 1000 );
 }
 
 void no_sound_in_spaceApp::mouseDown( MouseEvent event )
@@ -63,6 +80,11 @@ void no_sound_in_spaceApp::update()
 {
     // .lookAt( vec3(&eyepoint), vec3( target ) )
     mCam.lookAt( vec3( 3, 0, 10 ), vec3( 0 ) );
+    
+//    mCam.lookAt( vec3( 8 * sin( theta / 1 + 10 ), 7 * 
+//                      cos( theta / 2 ), 8 * 
+//                      cos( theta / 4 + 11 ) ), vec3( 0 ) );
+    
     
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
 }
@@ -77,9 +99,11 @@ void no_sound_in_spaceApp::draw()
     
     // I forgot this line because I am stupid
     mCubeMap->bind();
+    
     // draw planet
     gl::pushMatrices();
         gl::multModelMatrix( rotation );
+        gl::scale( vec3( 2 ) );
         planetBatch->draw();
     gl::popMatrices();
     
