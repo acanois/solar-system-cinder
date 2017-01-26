@@ -2,7 +2,8 @@
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/ImageIo.h"
-#include "cinder/Easing.h"
+#include "cinder/params/Params.h"
+#include "cinder/CameraUi.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -16,20 +17,42 @@ class no_sound_in_spaceApp : public App {
 	void draw() override;
     void resize() override;
     
+    // for default camera values
+    void setDefaultCameraValues();
+    
+    CameraPersp     mCam;      // Operating camera
+    CameraPersp     mCamInit;  // Camera initializer
+    CameraUi        mCamUi;
+    
+    // params for operating camera
+    params::InterfaceGlRef mParams;
+    vec3                   mEyePoint;
+    vec3                   mLookAt;
+    float                  mFov;
+    float                  mAspectRatio;
+    float                  mNearPlane;
+    float                  mFarPlane;
+    vec2                   mLensShift;
+    
+    // Shapes and textures - CLEAN UP
     gl::TextureCubeMapRef mCubeMap;
     gl::BatchRef    planetBatch, skyBoxBatch;
     gl::TextureRef  sunTex;
     gl::GlslProgRef mGlsl;
     mat4            rotation;
-    CameraPersp     mCam;
-    
-    float theta;
 };
 
+// Const for sky box, this probably needs to go somewhere else
 const int SKY_BOX_SIZE = 500;
 
 void no_sound_in_spaceApp::setup()
 {
+    setWindowSize( 1280, 720 );
+    
+    gl::enableDepthRead();
+    gl::enableDepthWrite();
+    gl::enableAlphaBlending();
+    
     // Reflective Texture
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
                                  loadAsset( "shader.frag" ) );
@@ -60,10 +83,6 @@ void no_sound_in_spaceApp::setup()
                                   gl::Texture::Format().mipmap() );
     sunTex->bind();
     
-    theta = 0;
-    
-    gl::enableDepthRead();
-    gl::enableDepthWrite();
     
 }
 
