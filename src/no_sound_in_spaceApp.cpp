@@ -21,9 +21,11 @@ class no_sound_in_spaceApp : public App {
     // for default camera values
     void setDefaultCameraValues();
     
-    CameraPersp     mCam;      // Operating camera
-    CameraPersp     mCamInit;  // Camera initializer
-    CameraUi        mCamUi;
+    static const size_t    FBO_WIDTH = 1280, FBO_HEIGHT = 720;
+    gl::FboRef             mObjectFbo;
+    CameraPersp            mCam;      // Operating camera
+    CameraPersp            mCamInit;  // Camera initializer
+    CameraUi               mCamUi;
     
     // params for operating camera
     params::InterfaceGlRef mParams;
@@ -60,6 +62,10 @@ void no_sound_in_spaceApp::setup()
     gl::enableAlphaBlending();
     
     setDefaultCameraValues();
+    
+    // FBO
+    gl::Fbo::Format format;
+    mObjectFbo = gl::Fbo::create( FBO_WIDTH, FBO_HEIGHT, format.depthTexture() );
     
     // Reflective Texture
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
@@ -135,7 +141,7 @@ void no_sound_in_spaceApp::update()
     mCam.setEyePoint( mEyePoint );
     mCam.lookAt( mLookAt );
     mCam.setLensShift( mLensShift );
-    // mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
+    mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
     
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
 }
@@ -180,6 +186,7 @@ void no_sound_in_spaceApp::draw()
     mParams->draw();
 }
 
+// RendererGl::Options().msaa( 16 ) = Multi-sample anti-aliasing( 16 samples )
 CINDER_APP( no_sound_in_spaceApp, RendererGl( RendererGl::Options().msaa( 16 ) ) )
 
 
