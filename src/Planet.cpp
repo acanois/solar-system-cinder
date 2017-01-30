@@ -20,9 +20,9 @@ Planet::Planet()
     
 }
 
-Planet::Planet( float planetRadiusX, float planetRadiusZ, size_t planetDiameter )
+Planet::Planet( float planetRadiusX, float planetRadiusZ, size_t planetId )
 {
-    init(planetRadiusX, planetRadiusZ, planetDiameter);
+    init(planetRadiusX, planetRadiusZ, planetId);
 }
 
 Planet::~Planet() 
@@ -30,12 +30,26 @@ Planet::~Planet()
     
 }
 
-void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetDiameter )
+void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetId )
 {
+    pId = planetId;
+    
+    pTexture = {
+                        "mercury_map.jpg",
+                        "venus_map.jpg",
+                        "earth_map.jpg",
+                        "mars_map.jpg",
+                        "jupiter_map.jpg",
+                        "saturn_map.jpg",
+                        "uranus_map.jpg",
+                        "neptune_map.jpg",
+                        "moon_map.jpg"
+                    };
+    
     // Load shaders
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ),
                                   loadAsset( "shader.frag" ) );
-    planetTexture = gl::Texture::create( loadImage( loadAsset( "moon_map.jpg" ) ),
+    planetTexture = gl::Texture::create( loadImage( loadAsset( pTexture[pId] ) ),
                                         gl::Texture::Format().mipmap() );
     
     auto sphere = geom::Sphere().subdivisions( 30 );
@@ -44,7 +58,6 @@ void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetDiamet
     planetRadius   = vec3( planetRadiusX, planetRadiusX * glm::linearRand(-0.33, 0.33), 
                           planetRadiusZ );
     planetPosition = vec3( 0, 0, 0 );
-    diameter       = planetDiameter;
     theta          = 0.0f;
     orbitspeed     = glm::linearRand( 0.005, 0.02 );
 }

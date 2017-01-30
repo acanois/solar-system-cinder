@@ -20,10 +20,10 @@ class Planet
 {
 public:
     Planet();
-    Planet( float planetRadiusX, float planetRadiusZ, size_t planetDiameter );
+    Planet( float planetRadiusX, float planetRadiusZ, size_t planetId );
     ~Planet();
     
-    void init(float planetRadiusX, float planetRadiusZ, size_t planetDiameter );
+    void init( float planetRadiusX, float planetRadiusZ, size_t planetId );
     void update();
     void display();
     
@@ -32,14 +32,17 @@ public:
     gl::TextureRef  planetTexture;
     gl::BatchRef    planetBatch;
     
+    array<string, 9> pTexture;
+    
     vec3            planetRadius;
     vec3            planetPosition;
-    size_t          planetDiameter;
+    size_t          planetId;
     
     float  orbitspeed;
     float  theta;
     mat4   rotation;
     size_t diameter;
+    size_t pId;
 };
 
 #endif /* Planet_h */

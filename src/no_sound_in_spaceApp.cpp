@@ -27,7 +27,7 @@ class no_sound_in_spaceApp : public App {
     void setDefaultCameraValues();
     
     static const size_t    FBO_WIDTH = 1280, FBO_HEIGHT = 720;
-    static const size_t NUM_PLANETS = 9;
+    static const size_t    NUM_PLANETS = 9;
     
     gl::FboRef             mObjectFbo;
     CameraPersp            mCam;      // Operating camera
@@ -77,7 +77,7 @@ void no_sound_in_spaceApp::setup()
     theta = 0;
     
     for ( size_t i = 0; i < NUM_PLANETS; i++ ) {
-        planet[i] = Planet( 5 + i * 3, 5 + i * 3, 10 );
+        planet[i] = Planet( 5 + i * 3, 5 + i * 3, i );
     }
     
     // FBO
