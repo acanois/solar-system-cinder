@@ -1,3 +1,5 @@
+#include <array>
+
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
@@ -25,12 +27,16 @@ class no_sound_in_spaceApp : public App {
     void setDefaultCameraValues();
     
     static const size_t    FBO_WIDTH = 1280, FBO_HEIGHT = 720;
-    // gl::FboRef             mObjectFbo;
+    static const size_t NUM_PLANETS = 9;
+    
+    gl::FboRef             mObjectFbo;
     CameraPersp            mCam;      // Operating camera
     CameraPersp            mCamInit;  // Camera initializer
     CameraUi               mCamUi;
     
-    Planet planet = Planet( 20, 20, 30 );
+    array<Planet, NUM_PLANETS> planet;
+    
+    float theta;
     
     // params for operating camera
     params::InterfaceGlRef mParams;
@@ -44,10 +50,10 @@ class no_sound_in_spaceApp : public App {
     
     // Shapes and textures - CLEAN UP
     gl::TextureCubeMapRef mCubeMap;
-    gl::BatchRef          skyBoxBatch;
-    // gl::TextureRef        sunTex;
-    // gl::GlslProgRef       mGlsl;
-    // mat4                  rotation;
+    gl::BatchRef          sunBatch, skyBoxBatch;
+    gl::TextureRef        sunTex;
+    gl::GlslProgRef       mGlsl;
+    mat4                  rotation;
 };
 
 // Const for sky box, this probably needs to go somewhere else
@@ -68,13 +74,18 @@ void no_sound_in_spaceApp::setup()
     
     setDefaultCameraValues();
     
+    theta = 0;
+    
+    for ( size_t i = 0; i < NUM_PLANETS; i++ ) {
+        planet[i] = Planet( 5 + i * 3, 5 + i * 3, 10 );
+    }
+    
     // FBO
     // gl::Fbo::Format format;
     // mObjectFbo = gl::Fbo::create( FBO_WIDTH, FBO_HEIGHT, format.depthTexture() );
     
-    // Reflective Texture
-//    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
-//                                 loadAsset( "shader.frag" ) );
+    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
+                                 loadAsset( "shader.frag" ) );
      
     
     // For sky box
@@ -95,12 +106,11 @@ void no_sound_in_spaceApp::setup()
     skyBoxBatch = gl::Batch::create( geom::Cube(), skyBoxGlsl );
     skyBoxBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
     
-//    auto sphere = geom::Sphere().subdivisions( 30 );
-//    planetBatch = gl::Batch::create( sphere, mGlsl );
+    auto sphere = geom::Sphere().subdivisions( 30 );
+    sunBatch    = gl::Batch::create( sphere, mGlsl );
     
-//    sunTex = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ), 
-//                                  gl::Texture::Format().mipmap() );
-//    sunTex->bind();
+    sunTex = gl::Texture::create( loadImage( loadAsset( "sun_map_orange.jpg" ) ), 
+                                  gl::Texture::Format().mipmap() );
 //    
     // UI Window
     mParams = params::InterfaceGl::create( getWindow(), "CameraPersp", 
@@ -143,19 +153,24 @@ void no_sound_in_spaceApp::mouseDown( MouseEvent event )
 
 void no_sound_in_spaceApp::update()
 {
+    theta += 0.01;
+    
     mCam.setEyePoint( mEyePoint );
     mCam.lookAt( mLookAt );
     mCam.setLensShift( mLensShift );
+    mCam.setOrientation( quat(1, 0, 0, 0) );
     // mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
     
-    // rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
+    rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
     
-    planet.update();
+    for ( size_t i = 0; i < NUM_PLANETS; i++ ) {
+        planet[i].update();
+    }
 }
 
 void no_sound_in_spaceApp::setDefaultCameraValues()
 {
-    mEyePoint			= vec3( 0.0f, 0.0f, 10.0f );
+    mEyePoint			= vec3( 0.0f, 0.0f, 30.0f );
     mLookAt				= vec3( 0.0f );
     mFov				= 25.0f;
     mAspectRatio		= getWindowAspectRatio();
@@ -177,12 +192,16 @@ void no_sound_in_spaceApp::draw()
     mCubeMap->bind();
     
     // draw planet
-    planet.display();
-//    gl::pushMatrices();
-//        gl::multModelMatrix( rotation );
-//        gl::scale( vec3( 2 ) );
-//        planetBatch->draw();
-//    gl::popMatrices();
+    for ( size_t i = 0; i < NUM_PLANETS; i++ ) {
+        planet[i].display();
+    }
+    
+    gl::pushMatrices();
+        gl::multModelMatrix( rotation );
+        gl::scale( vec3( 2 ) );
+        sunTex->bind();
+        sunBatch->draw();
+    gl::popMatrices();
     
     // draw sky box
     gl::pushMatrices();

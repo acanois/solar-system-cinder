@@ -6,6 +6,8 @@
 //
 //
 
+#include <glm/gtc/random.hpp>
+
 #include "Planet.h"
 #include "cinder/gl/gl.h"
 
@@ -33,18 +35,18 @@ void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetDiamet
     // Load shaders
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ),
                                   loadAsset( "shader.frag" ) );
-    planetTexture = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ),
+    planetTexture = gl::Texture::create( loadImage( loadAsset( "moon_map.jpg" ) ),
                                         gl::Texture::Format().mipmap() );
-    planetTexture->bind();
     
     auto sphere = geom::Sphere().subdivisions( 30 );
     planetBatch = gl::Batch::create( sphere, mGlsl );
     
-    planetRadius   = vec3( planetRadiusX, 0, planetRadiusZ );
+    planetRadius   = vec3( planetRadiusX, planetRadiusX * glm::linearRand(-0.33, 0.33), 
+                          planetRadiusZ );
     planetPosition = vec3( 0, 0, 0 );
     diameter       = planetDiameter;
     theta          = 0.0f;
-    orbitspeed     = 0.01;
+    orbitspeed     = glm::linearRand( 0.005, 0.02 );
 }
 
 void Planet::update() 
@@ -53,6 +55,7 @@ void Planet::update()
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
     
     planetPosition.x = planetRadius.x * sin( theta );
+    planetPosition.y = planetRadius.y * sin( theta );
     planetPosition.z = planetRadius.z * cos( theta );
 }
 
@@ -61,7 +64,8 @@ void Planet::display()
     gl::pushMatrices();
         gl::translate( planetPosition );
         gl::multModelMatrix( rotation );
-        gl::scale( vec3( 2 ) );
+        gl::scale( vec3( 1 ) );
+        planetTexture->bind();
         planetBatch->draw();
     gl::popMatrices();
 }
