@@ -49,14 +49,16 @@ void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetDiamet
 
 void Planet::update() 
 {
-    theta += orbitspeed;
+    theta    += orbitspeed;
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
+    
+    
 }
 
 void Planet::display()
 {
     gl::pushMatrices();
-    gl::translate( planetPosition );
+        gl::translate( planetPosition );
         gl::multModelMatrix( rotation );
         gl::scale( vec3( 2 ) );
         planetBatch->draw();

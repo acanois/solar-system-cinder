@@ -5,6 +5,9 @@
 #include "cinder/params/Params.h"
 #include "cinder/CameraUi.h"
 
+// For planet class
+#include "Planet.h"
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -27,6 +30,8 @@ class no_sound_in_spaceApp : public App {
     CameraPersp            mCamInit;  // Camera initializer
     CameraUi               mCamUi;
     
+    Planet planet = Planet( 0, 0, 30 );
+    
     // params for operating camera
     params::InterfaceGlRef mParams;
     vec3                   mEyePoint;
@@ -39,10 +44,10 @@ class no_sound_in_spaceApp : public App {
     
     // Shapes and textures - CLEAN UP
     gl::TextureCubeMapRef mCubeMap;
-    gl::BatchRef          planetBatch, skyBoxBatch;
-    gl::TextureRef        sunTex;
-    gl::GlslProgRef       mGlsl;
-    mat4                  rotation;
+    gl::BatchRef          skyBoxBatch;
+    // gl::TextureRef        sunTex;
+    // gl::GlslProgRef       mGlsl;
+    // mat4                  rotation;
 };
 
 // Const for sky box, this probably needs to go somewhere else
@@ -68,8 +73,8 @@ void no_sound_in_spaceApp::setup()
     // mObjectFbo = gl::Fbo::create( FBO_WIDTH, FBO_HEIGHT, format.depthTexture() );
     
     // Reflective Texture
-    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
-                                 loadAsset( "shader.frag" ) );
+//    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
+//                                 loadAsset( "shader.frag" ) );
      
     
     // For sky box
@@ -90,13 +95,13 @@ void no_sound_in_spaceApp::setup()
     skyBoxBatch = gl::Batch::create( geom::Cube(), skyBoxGlsl );
     skyBoxBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
     
-    auto sphere = geom::Sphere().subdivisions( 30 );
-    planetBatch = gl::Batch::create( sphere, mGlsl );
+//    auto sphere = geom::Sphere().subdivisions( 30 );
+//    planetBatch = gl::Batch::create( sphere, mGlsl );
     
-    sunTex = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ), 
-                                  gl::Texture::Format().mipmap() );
-    sunTex->bind();
-    
+//    sunTex = gl::Texture::create( loadImage( loadAsset( "jupiter_map.jpg" ) ), 
+//                                  gl::Texture::Format().mipmap() );
+//    sunTex->bind();
+//    
     // UI Window
     mParams = params::InterfaceGl::create( getWindow(), "CameraPersp", 
                                           toPixels( ivec2( 200, 300 ) ) );
@@ -143,7 +148,9 @@ void no_sound_in_spaceApp::update()
     mCam.setLensShift( mLensShift );
     // mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
     
-    rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
+    // rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
+    
+    planet.update();
 }
 
 void no_sound_in_spaceApp::setDefaultCameraValues()
@@ -170,11 +177,12 @@ void no_sound_in_spaceApp::draw()
     mCubeMap->bind();
     
     // draw planet
-    gl::pushMatrices();
-        gl::multModelMatrix( rotation );
-        gl::scale( vec3( 2 ) );
-        planetBatch->draw();
-    gl::popMatrices();
+    planet.display();
+//    gl::pushMatrices();
+//        gl::multModelMatrix( rotation );
+//        gl::scale( vec3( 2 ) );
+//        planetBatch->draw();
+//    gl::popMatrices();
     
     // draw sky box
     gl::pushMatrices();
