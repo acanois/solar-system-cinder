@@ -33,6 +33,7 @@ public:
     gl::BatchRef    planetBatch;
     
     array<string, 9> pTexture;
+    array<float, 9>  pDiameter;
     
     vec3            planetRadius;
     vec3            planetPosition;
