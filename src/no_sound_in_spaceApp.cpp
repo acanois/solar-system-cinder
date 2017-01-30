@@ -30,7 +30,7 @@ class no_sound_in_spaceApp : public App {
     CameraPersp            mCamInit;  // Camera initializer
     CameraUi               mCamUi;
     
-    Planet planet = Planet( 0, 0, 30 );
+    Planet planet = Planet( 20, 20, 30 );
     
     // params for operating camera
     params::InterfaceGlRef mParams;

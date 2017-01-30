@@ -52,7 +52,8 @@ void Planet::update()
     theta    += orbitspeed;
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
     
-    
+    planetPosition.x = planetRadius.x * sin( theta );
+    planetPosition.z = planetRadius.z * cos( theta );
 }
 
 void Planet::display()
