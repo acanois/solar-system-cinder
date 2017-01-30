@@ -22,7 +22,7 @@ class no_sound_in_spaceApp : public App {
     void setDefaultCameraValues();
     
     static const size_t    FBO_WIDTH = 1280, FBO_HEIGHT = 720;
-    gl::FboRef             mObjectFbo;
+    // gl::FboRef             mObjectFbo;
     CameraPersp            mCam;      // Operating camera
     CameraPersp            mCamInit;  // Camera initializer
     CameraUi               mCamUi;
@@ -64,8 +64,8 @@ void no_sound_in_spaceApp::setup()
     setDefaultCameraValues();
     
     // FBO
-    gl::Fbo::Format format;
-    mObjectFbo = gl::Fbo::create( FBO_WIDTH, FBO_HEIGHT, format.depthTexture() );
+    // gl::Fbo::Format format;
+    // mObjectFbo = gl::Fbo::create( FBO_WIDTH, FBO_HEIGHT, format.depthTexture() );
     
     // Reflective Texture
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
@@ -141,7 +141,7 @@ void no_sound_in_spaceApp::update()
     mCam.setEyePoint( mEyePoint );
     mCam.lookAt( mLookAt );
     mCam.setLensShift( mLensShift );
-    mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
+    // mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
     
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
 }
