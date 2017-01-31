@@ -61,8 +61,8 @@ void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetId )
                 };
     
     // Load shaders
-    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ),
-                                  loadAsset( "shader.frag" ) );
+    mGlsl = gl::GlslProg::create( loadAsset( "shader_normal.vert" ),
+                                  loadAsset( "shader_normal.frag" ) );
     planetTexture = gl::Texture::create( loadImage( loadAsset( pTexture[pId] ) ),
                                          gl::Texture::Format().mipmap() );
     

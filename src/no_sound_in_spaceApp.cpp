@@ -85,8 +85,8 @@ void no_sound_in_spaceApp::setup()
     // gl::Fbo::Format format;
     // mObjectFbo = gl::Fbo::create( FBO_WIDTH, FBO_HEIGHT, format.depthTexture() );
     
-    mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ), 
-                                 loadAsset( "shader.frag" ) );
+    mGlsl = gl::GlslProg::create( loadAsset( "shader_normal.vert" ), 
+                                 loadAsset( "shader_normal.frag" ) );
      
     
     // For sky box
