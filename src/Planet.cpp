@@ -22,7 +22,7 @@ Planet::Planet()
 
 Planet::Planet( float planetRadiusX, float planetRadiusZ, size_t planetId )
 {
-    init(planetRadiusX, planetRadiusZ, planetId);
+    init( planetRadiusX, planetRadiusZ, planetId );
 }
 
 Planet::~Planet() 

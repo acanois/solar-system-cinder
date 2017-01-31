@@ -52,8 +52,11 @@ class no_sound_in_spaceApp : public App {
     gl::TextureCubeMapRef mCubeMap;
     gl::BatchRef          sunBatch, skyBoxBatch;
     gl::TextureRef        sunTex;
+    gl::TextureRef        diffuseTex, normalTex;
     gl::GlslProgRef       mGlsl;
     mat4                  rotation;
+    
+    vec3                  lightPosition;
 };
 
 // Const for sky box, this probably needs to go somewhere else
@@ -110,6 +113,8 @@ void no_sound_in_spaceApp::setup()
     auto sphere = geom::Sphere().subdivisions( 30 );
     sunBatch    = gl::Batch::create( sphere, mGlsl );
     
+    // Textures
+        
     sunTex = gl::Texture::create( loadImage( loadAsset( "sun_map_orange.jpg" ) ), 
                                   gl::Texture::Format().mipmap() );
 //    
