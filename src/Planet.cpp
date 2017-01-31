@@ -47,23 +47,24 @@ void Planet::init( float planetRadiusX, float planetRadiusZ, size_t planetId )
                 };
     
     // Multipliers for planet diameter. Earth = 1.
+    // Info taken from a NASA website
     pDiameter = {
-                    0.383,
-                    0.949,
-                    1,
-                    0.532,
-                    11.21,
-                    9.45,
-                    4.01,
-                    3.88,
-                    0.186,
+                    0.383, // mercury
+                    0.949, // venus
+                    1,     // earth
+                    0.532, // mars
+                    5.605, // jupiter
+                    4.725, // saturn
+                    2.005, // uranus
+                    1.94,  // neptune
+                    0.186, // pluto
                 };
     
     // Load shaders
     mGlsl = gl::GlslProg::create( loadAsset( "shader.vert" ),
                                   loadAsset( "shader.frag" ) );
     planetTexture = gl::Texture::create( loadImage( loadAsset( pTexture[pId] ) ),
-                                        gl::Texture::Format().mipmap() );
+                                         gl::Texture::Format().mipmap() );
     
     auto sphere = geom::Sphere().subdivisions( 30 );
     planetBatch = gl::Batch::create( sphere, mGlsl );
@@ -90,7 +91,7 @@ void Planet::display()
     gl::pushMatrices();
         gl::translate( planetPosition );
         gl::multModelMatrix( rotation );
-        gl::scale( vec3( 1 * pDiameter[planetId] ) );
+        gl::scale( vec3( pDiameter[pId] ) );
         planetTexture->bind();
         planetBatch->draw();
     gl::popMatrices();

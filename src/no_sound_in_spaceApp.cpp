@@ -58,6 +58,7 @@ class no_sound_in_spaceApp : public App {
 
 // Const for sky box, this probably needs to go somewhere else
 const size_t SKY_BOX_SIZE = 500;
+const size_t SUN_DIAMETER = 19; // 1/10th - fullsize = 109, set camEye Z to 250
 
 void no_sound_in_spaceApp::prepareSettings( Settings *settings ) 
 {
@@ -77,7 +78,7 @@ void no_sound_in_spaceApp::setup()
     theta = 0;
     
     for ( size_t i = 0; i < NUM_PLANETS; i++ ) {
-        planet[i] = Planet( 5 + i * 3, 5 + i * 3, i );
+        planet[i] = Planet( ( SUN_DIAMETER + 5 ) + i * 10, ( SUN_DIAMETER + 5 ) + i * 10, i );
     }
     
     // FBO
@@ -170,7 +171,7 @@ void no_sound_in_spaceApp::update()
 
 void no_sound_in_spaceApp::setDefaultCameraValues()
 {
-    mEyePoint			= vec3( 0.0f, 0.0f, 30.0f );
+    mEyePoint			= vec3( 0.0f, 0.0f, ( SUN_DIAMETER * 6.0f ) );
     mLookAt				= vec3( 0.0f );
     mFov				= 25.0f;
     mAspectRatio		= getWindowAspectRatio();
@@ -198,7 +199,8 @@ void no_sound_in_spaceApp::draw()
     
     gl::pushMatrices();
         gl::multModelMatrix( rotation );
-        gl::scale( vec3( 2 ) );
+    // This is 1/10th scale to the actual sun. But setting it to the full 109 is kinda fun.
+        gl::scale( vec3( SUN_DIAMETER ) );
         sunTex->bind();
         sunBatch->draw();
     gl::popMatrices();
