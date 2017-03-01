@@ -14,6 +14,12 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 
+// Const for sky box, this probably needs to go somewhere else
+const size_t SKY_BOX_SIZE = 500;
+const size_t SUN_DIAMETER = 19; // 1/10th - fullsize = 109, set camEye Z to 250
+
+//static const size_t
+
 class no_sound_in_spaceApp : public App {
   public:
     static void prepareSettings( Settings *settings );
@@ -49,16 +55,14 @@ class no_sound_in_spaceApp : public App {
     vec2                   mLensShift;
     
     // Shapes and textures - CLEAN UP
-    gl::TextureCubeMapRef mCubeMap;
-    gl::BatchRef          sunBatch, skyBoxBatch;
-    gl::TextureRef        sunTex;
-    gl::GlslProgRef       mGlsl;
-    mat4                  rotation;
+    gl::TextureCubeMapRef  mCubeMap;
+    gl::BatchRef           sunBatch, skyBoxBatch;
+    gl::TextureRef         sunTex; // normalTex;
+    gl::GlslProgRef        mGlsl;
+    mat4                   rotation;
+    
+    vec3                   lightPos;
 };
-
-// Const for sky box, this probably needs to go somewhere else
-const size_t SKY_BOX_SIZE = 500;
-const size_t SUN_DIAMETER = 19; // 1/10th - fullsize = 109, set camEye Z to 250
 
 void no_sound_in_spaceApp::prepareSettings( Settings *settings ) 
 {
@@ -104,14 +108,22 @@ void no_sound_in_spaceApp::setup()
 //    planetBatch = gl::Batch::create( geom::Sphere(), envMapGlsl );
 //    planetBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
     
+    // Batch for sky box
     skyBoxBatch = gl::Batch::create( geom::Cube(), skyBoxGlsl );
     skyBoxBatch->getGlslProg()->uniform( "uCubeMapTex", 0 );
     
+    // Batch for Sun
     auto sphere = geom::Sphere().subdivisions( 30 );
     sunBatch    = gl::Batch::create( sphere, mGlsl );
+    mGlsl->uniform( "uDiffuseMap", 0 );
+    mGlsl->uniform( "uNormalMap", 1 );
+    mGlsl->uniform( "uLightLocViewSpace", vec3( 0, 0, 1 ) );
     
     sunTex = gl::Texture::create( loadImage( loadAsset( "sun_map_orange.jpg" ) ), 
                                   gl::Texture::Format().mipmap() );
+    
+//    normalTex = gl::Texture::create( loadImage( loadAsset( "ice_normal.jpg" ) ),
+//                                    gl::Texture::Format().mipmap() );
 //    
     // UI Window
     mParams = params::InterfaceGl::create( getWindow(), "CameraPersp", 
@@ -159,8 +171,9 @@ void no_sound_in_spaceApp::update()
     mCam.setEyePoint( mEyePoint );
     mCam.lookAt( mLookAt );
     mCam.setLensShift( mLensShift );
-    mCam.setOrientation( quat(1, 0, 0, 0) );
     // mCam.setPerspective( mFov, mObjectFbo->getAspectRatio(), mNearPlane, mFarPlane );
+    
+    lightPos = vec3( 0, 0, 0 );
     
     rotation *= rotate( toRadians( 0.2f ), normalize( vec3( 0, 1, 0 ) ) );
     
@@ -201,7 +214,10 @@ void no_sound_in_spaceApp::draw()
         gl::multModelMatrix( rotation );
     // This is 1/10th scale to the actual sun. But setting it to the full 109 is kinda fun.
         gl::scale( vec3( SUN_DIAMETER ) );
+        mGlsl->uniform( "uLightLocViewSpace", vec3( mCam.getViewMatrix() * 
+                                                   vec4( lightPos, 1 ) ) );
         sunTex->bind();
+    //normalTex->bind( 1 );
         sunBatch->draw();
     gl::popMatrices();
     

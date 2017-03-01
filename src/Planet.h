@@ -32,7 +32,7 @@ public:
     gl::TextureRef  planetTexture;
     gl::BatchRef    planetBatch;
     
-    array<string, 9> pTexture;
+    array<string, 9> pTexture, pNormalTex;
     array<float, 9>  pDiameter;
     
     vec3            planetRadius;
@@ -44,6 +44,8 @@ public:
     mat4   rotation;
     size_t diameter;
     size_t pId;
+    
+    vec3   lightPos;
 };
 
 #endif /* Planet_h */
